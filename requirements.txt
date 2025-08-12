@@ -1,1 +1,10 @@
+# Core Dependencies
 PySide6==6.9.1
+
+# Documentation dependencies
+Sphinx==8.2.3
+sphinx-rtd-theme==3.0.2
+bluepy==1.3.0
+
+# Mac Dependencies
+opencv-python-headless==4.12.0.88

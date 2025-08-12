@@ -7,8 +7,10 @@
 
  # Setup
 
- TBD
+Mac
+- Make sure to install this under your user directory - originally tried under my icloud folder but kept failing.
 
  # Quick-start
 
  TBD
+ 
