@@ -5,4 +5,10 @@
 
  This app was made to help this arrangement. 
 
- 
+ # Setup
+
+ TBD
+
+ # Quick-start
+
+ TBD
