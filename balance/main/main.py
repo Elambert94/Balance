@@ -1,39 +1,47 @@
 import sys
-import random
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QPixmap
 
-class MyWidget(QtWidgets.QWidget):
-    """A simple example widget.
+class MainWidget(QtWidgets.QWidget):
+    """Main application widget.
 
-    :param QtWidgets: The parent widget.
+    :param QtWidgets: Parent widget.
     :type QtWidgets: QWidget
     """
     def __init__(self):
         """Constructor for MyWidget."""
         super().__init__()
+        self.setWindowTitle("Balance")
+        title = self.create_title_banner()
 
-        self.hello = ["Hallo Welt", "Hei maailma", "Hola Mundo", "Привет мир"]
+    def create_title_banner(self):
+        """Create the title banner for the application.
 
-        self.button = QtWidgets.QPushButton("Click me!")
-        self.text = QtWidgets.QLabel("Hello World",
+        :return: The layout containing the title banner widgets.
+        :rtype: QVBoxLayout
+        """
+
+        # Create Title Text
+        self.box_layout = QtWidgets.QVBoxLayout(self, alignment=QtCore.Qt.AlignTop)
+        self.text = QtWidgets.QLabel("Balance",
                                      alignment=QtCore.Qt.AlignCenter)
+        self.text.setStyleSheet("font-size: 48px; font-weight: bold; color: #333;")
+        self.box_layout.addWidget(self.text)
 
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.addWidget(self.text)
-        self.layout.addWidget(self.button)
-
-        self.button.clicked.connect(self.magic)
-
-    @QtCore.Slot()
-    def magic(self):
-        """Change the text to a random greeting."""
-        self.text.setText(random.choice(self.hello))
-
+        # Add Logo
+        self.logo_label = QtWidgets.QLabel("LogoLabel", alignment=QtCore.Qt.AlignCenter)
+        self.logo = QPixmap("resources/icons/scale.png")
+        self.logo = QPixmap("resources/icons/scale.png")
+        if self.logo.isNull():
+            self.logo_label.setText("Logo not found")
+        else:
+            self.logo_label.setPixmap(self.logo)
+            self.box_layout.addWidget(self.logo_label)
+        return self.box_layout
+    
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-
-    widget = MyWidget()
-    widget.resize(800, 600)
+    widget = MainWidget()
+    widget.showFullScreen()
     widget.show()
-
     sys.exit(app.exec())
