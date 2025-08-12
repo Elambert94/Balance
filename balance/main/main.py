@@ -3,9 +3,10 @@ import random
 from PySide6 import QtCore, QtWidgets, QtGui
 
 class MyWidget(QtWidgets.QWidget):
-    """
-    A simple example widget.
-    :param QtWidgets.QWidget: The parent widget.
+    """A simple example widget.
+
+    :param QtWidgets: The parent widget.
+    :type QtWidgets: QWidget
     """
     def __init__(self):
         """Constructor for MyWidget."""
@@ -25,6 +26,7 @@ class MyWidget(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def magic(self):
+        """Change the text to a random greeting."""
         self.text.setText(random.choice(self.hello))
 
 if __name__ == "__main__":
