@@ -53,7 +53,7 @@ class Account():
         :param date: Value (e.g. 1, 31, TBD) which the income arrives.
         :type date: str
         """
-        self.incomes.append(Income(name, amount, self, date))
+        self.incomes.append(Income(name, amount, date, self))
 
     def remove_income(self, income : 'Income'):
         """Remove an income from the income list.
@@ -71,46 +71,61 @@ class Account():
         """
         return self.incomes
 
-class Income():
-    def __init__(self, name : str, amount : float, account : Account, date : str):
-        """Constructor for the income class.
-
-        :param name: Name of the income (e.g Salary).
-        :type name: str
-        :param amount: The income amount.
-        :type amount: float
-        :param account: The associated account for the income.
-        :type account: Account
+class Transaction():
+    def __init__(self, name : str, amount : float, date : str):
         """
+        :param name: Description name for the transaction.
+        :type name: str
+        :param amount: Amount for the transaction.
+        :type amount: float
+        :param date: Date of the transaction (e.g. "1", "31", "Variable", "As & When")
+        :type date: str
+        """
+        
         self.name = name
         self.amount = amount
-        self.account = account
         self.date = date
 
-    def get_income_name(self) -> str:
-        """Retrieve the name of the income.
-
-        :return: Returns income name.
+    def get_name(self) -> str:
+        """
+        :return: The transaction name.
         :rtype: str
         """
         return self.name
     
-    def get_income_amount(self) -> float:
-        """Retrieve the amount of income
-
-        :return: Returns the income amount.
+    def get_amount(self)->float:
+        """
+        :return: The transaction amount. 
         :rtype: float
         """
         return self.amount
     
-    def get_income_date(self)-> str:
-        """Retrieve the income date. 
-
-        :return: Returns the income date.
+    def get_date(self) -> str:
+        """
+        :return: The transaction date.
         :rtype: str
         """
         return self.date
     
+    def set_name(self, new_name : str):
+        """
+        :param new_name: Name to set.
+        :type new_name: str
+        """
+        self.name = new_name
+    
+    def set_amount(self, new_amount : float):
+        self.amount = new_amount
+    
+    def set_date(self, new_date : str):
+        self.date = new_date
+
+class Income(Transaction):
+    def __init__(self, name : str, amount : float, date : str, account : Account):
+        super().__init__(name = name, amount = amount, date = date)
+        # Attributes
+        self.account = account
+
     def get_account(self) -> Account:
         """Retrieve the account which the income is assigned.
 
@@ -127,30 +142,6 @@ class Income():
         """
         self.account = Account
     
-    def set_income_name(self, income_name : str):
-        """Set a new name for the income.
-
-        :param income_name: The new name of the income.
-        :type income_name: str
-        """
-        self.name = income_name
-
-    def set_income_amount(self, income_amount : float):
-        """Set a new amount for the income.
-
-        :param income_amount: The new amount to set.
-        :type income_amount: float
-        """
-        self.amount = income_amount
-    
-    def set_income_date(self, income_date : str):
-        """Set a new date for the income
-
-        :param income_date: The new date to set.
-        :type income_date: str
-        """
-        self.date = income_date
-
 class Person():
     """Base class for a person.
     """
@@ -293,11 +284,11 @@ Person1 = Person("Jeff")
 
 Person1.create_account("JeffsAccount")
 JeffsAccount = Person1.get_account_by_name("JeffsAccount")
-JeffsAccount.add_income("Salary", 3000, "12")
+JeffsAccount.add_income("Salary", 3000, "1")
 
 for income in JeffsAccount.get_incomes():
-    print(income.name, income.date)
-
+    acc = income.get_account()
+    print(acc.get_account_name(), income.get_date())
 
 
 
