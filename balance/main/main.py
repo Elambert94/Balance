@@ -13,6 +13,7 @@ class MainWidget(QtWidgets.QWidget):
         super().__init__()
         self.setWindowTitle("Balance")
         title = self.create_title_banner()
+        
 
     def create_title_banner(self):
         """Create the title banner for the application.
@@ -43,5 +44,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     widget = MainWidget()
     widget.showFullScreen()
-    widget.show()
     sys.exit(app.exec())

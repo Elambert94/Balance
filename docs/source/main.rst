@@ -4,6 +4,14 @@ main package
 Submodules
 ----------
 
+main.base\_classes module
+-------------------------
+
+.. automodule:: main.base_classes
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 main.main module
 ----------------
 

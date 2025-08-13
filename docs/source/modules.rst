@@ -1,4 +1,4 @@
-Balance
+balance
 =======
 
 .. toctree::
