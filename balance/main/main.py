@@ -32,7 +32,6 @@ class MainWidget(QtWidgets.QWidget):
         # Add Logo
         self.logo_label = QtWidgets.QLabel("LogoLabel", alignment=QtCore.Qt.AlignCenter)
         self.logo = QPixmap("resources/icons/scale.png")
-        self.logo = QPixmap("resources/icons/scale.png")
         if self.logo.isNull():
             self.logo_label.setText("Logo not found")
         else:
