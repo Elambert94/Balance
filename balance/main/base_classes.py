@@ -1,44 +1,43 @@
 class Account():
     def __init__(self, account_name : str, account_owner : 'Person'):
-        """Constructor for the account class
+        """Constructor.
 
         :param account_name: The account name.
         :type account_name: str
-        :param account_owner: Owner of the account.
+        :param account_owner: The owner of the account.
         :type account_owner: Person
         """
         self.account_name = account_name
         self.account_owner = account_owner
         self.incomes : list['Income'] = []
+        self.transfers_in = list['TransferIn']
+        self.transfers_out = list['TransferOut']
+        self.bills = list['Bill']
     
     def get_account_name(self) -> str:
-        """Retrieve the account name.
-
+        """
         :return: The account name.
         :rtype: str
         """
         return self.account_name
     
     def set_account_name(self, name : str):
-        """Sets the account name for the account.
-
-        :param name: Intended name for the account.
+        """
+        :param name: Name to set for the account.
         :type name: str
         """
         self.account_name = name
     
     def get_account_owner(self) -> 'Person':
-        """Retrieve the owner of the account.
-
+        """
         :return: The account owner.
         :rtype: Person
         """
         return self.account_owner
     
     def set_account_owner(self, Person):
-        """Sets the account owner of the account.
-
-        :param Person: New owner of the account.
+        """
+        :param Person: Owner of the account to set.
         :type Person: Person
         """
         self.account_owner = Person
@@ -56,24 +55,23 @@ class Account():
         self.incomes.append(Income(name, amount, date, self))
 
     def remove_income(self, income : 'Income'):
-        """Remove an income from the income list.
-
-        :param income: Income to remove.
+        """
+        :param income: Income to remove from the account.
         :type income: Income
         """
         self.incomes.remove(income)
 
     def get_incomes(self):
-        """Retrieve all incomes. 
-
-        :return: The list of incomes.
+        """
+        :return: List of incomes associated with the account.
         :rtype: list[Income]
         """
         return self.incomes
 
 class Transaction():
-    def __init__(self, name : str, amount : float, date : str):
+    def __init__(self, name : str, amount : float, date : str, account : Account):
         """
+        Constructor.
         :param name: Description name for the transaction.
         :type name: str
         :param amount: Amount for the transaction.
@@ -85,6 +83,7 @@ class Transaction():
         self.name = name
         self.amount = amount
         self.date = date
+        self.account = account
 
     def get_name(self) -> str:
         """
@@ -107,6 +106,13 @@ class Transaction():
         """
         return self.date
     
+    def get_account(self)->Account:
+        """
+        :return: The account owning the transaction.
+        :rtype: Account
+        """
+        return self.account
+    
     def set_name(self, new_name : str):
         """
         :param new_name: Name to set.
@@ -115,39 +121,81 @@ class Transaction():
         self.name = new_name
     
     def set_amount(self, new_amount : float):
+        """
+        :param new_amount: The amount to set for the transaction.
+        :type new_amount: float
+        """
         self.amount = new_amount
     
     def set_date(self, new_date : str):
-        self.date = new_date
-
-class Income(Transaction):
-    def __init__(self, name : str, amount : float, date : str, account : Account):
-        super().__init__(name = name, amount = amount, date = date)
-        # Attributes
-        self.account = account
-
-    def get_account(self) -> Account:
-        """Retrieve the account which the income is assigned.
-
-        :return: The assigned account.
-        :rtype: Account
         """
-        return self.account
+        :param new_date: The new date to set for the transaction.
+        :type new_date: str
+        """
+        self.date = new_date
     
-    def set_account(self, Account):
-        """Set a new account for the income.
-
+    def set_account(self, Account : Account):
+        """
         :param Account: The new account to assign.
         :type Account: Account
         """
         self.account = Account
-    
-class Person():
-    """Base class for a person.
-    """
-    def __init__(self, name : str):
-        """Constructor for the person class.
 
+class Income(Transaction):
+    def __init__(self, name : str, amount : float, date : str, account : Account):
+        """
+        Constructor.
+        """
+        super().__init__(name = name, amount = amount, date = date, account=account)
+
+class TransferOut(Transaction):
+    def __init__(self, name : str, amount : float, date : str, account : Account, target_account : 'Account'):
+        super().__init__(name = name, amount = amount, date = date, account=account)    
+        """
+        Constructor.
+        :param target_account: The account receiving the funds.
+        :type target_account: Account
+        """
+        self.target_account = target_account
+
+class TransferIn(Transaction):
+    def __init__(self, name : str, amount : float, date : str, account : Account, transferred_by : 'Account'):
+        """
+        Constructor.
+        :param transferred_by: The account from which the funds were transferred.
+        :type transferred_by: Account
+        """
+        super().__init__(name = name, amount = amount, date = date, account=account)  
+        
+        self.transferred_by = transferred_by
+
+class Bill(Transaction):
+    def __init__(self, name : str, amount : float, date : str, account : Account, category : 'Category'):
+        """
+        :param category: The assigned category for the transaction
+        :type category: Category
+        """
+        super().__init__(name, amount, date, account)
+
+        self.category = category
+
+    def get_category(self) -> 'Category':
+        """
+        :return: The category assigned to the bill.
+        :rtype: Category
+        """
+        return self.category
+    
+    def set_category(self, new_category : 'Category'):
+        """
+        :param new_category: The new category to assign to the bill.
+        :type new_category: Category
+        """
+        self.category = new_category
+
+class Person():
+    def __init__(self, name : str):
+        """Constructor.
         :param name: Name of the person.
         :type name: str
         """
@@ -157,24 +205,21 @@ class Person():
         self.accounts : list[Account] = []
     
     def get_name(self)->str:
-        """Gets the name of person
-
-        :return: Name of the person
+        """
+        :return: Name of the person.
         :rtype: str
         """
         return self.name
     
     def get_accounts(self) -> list['Account']:
-        """Retrieve a list of the accounts owned by the person.
-
-        :return: List of accounts owned.
+        """
+        :return: List of accounts owned by the person.
         :rtype: list[Account]
         """
         return self.accounts
     
     def get_account_names(self) -> list[str]:
-        """Get a list of account names for the person.
-
+        """
         :return: List of account names.
         :rtype: list[str]
         """
@@ -184,7 +229,7 @@ class Person():
         return account_names
     
     def get_account_by_name(self, search_name : str) -> Account:
-        """Get an account by it's name.
+        """Get an account by searching it's name.
 
         :param search_name: The name of the account to retrieve.
         :type search_name: str
@@ -197,9 +242,8 @@ class Person():
         return None
     
     def set_name(self, new_name : str):
-        """Set a new name for the person
-
-        :param new_name: New name.
+        """
+        :param new_name: New name to set for the person.
         :type new_name: str
         """
         self.name = new_name
@@ -279,16 +323,75 @@ class PersonManager():
                 self.people.remove(person)
                 break
 
-Manager = PersonManager()
-Person1 = Person("Jeff")
+class Category():
+    def __init__(self, name : str, colour : tuple):
+        """
+        :param name: Name of the category.
+        :type name: str
+        :param colour: Colour to assign to the category.
+        :type colour: tuple
+        """
+        self.name = name
+        self.colour = colour
 
-Person1.create_account("JeffsAccount")
-JeffsAccount = Person1.get_account_by_name("JeffsAccount")
-JeffsAccount.add_income("Salary", 3000, "1")
+    def get_name(self):
+        """
+        :return: Name of the category.
+        :rtype: str
+        """
+        return self.name
+    
+    def get_colour(self):
+        """
+        :return: Colour assigned to the category.
+        :rtype: tuple
+        """
+        return self.colour
+    
+    def set_name(self, new_name):
+        """
+        :param new_name: The new name for the category.
+        :type new_name: str
+        """
+        self.name = new_name
+    
+    def set_colour(self, new_colour):
+        """
+        :param new_colour: The new colour for the category.
+        :type new_colour: tuple
+        """
+        self.colour = new_colour
 
-for income in JeffsAccount.get_incomes():
-    acc = income.get_account()
-    print(acc.get_account_name(), income.get_date())
+class CategoryManager():
+    def __init__(self):
+        self.categories : list[Category] = None
+
+    def add_category(self, name : str, colour : tuple):
+        """
+        Add a new category to the manager.
+
+        :param name: Name for the category.
+        :type name: str
+        :param colour: Colour to assign to the category.
+        :type colour: tuple
+        """
+        self.categories.append(Category(name, colour))
+    
+    def remove_category(self, category : Category):
+        """
+        Remove a category from the maanger.
+
+        :param category: Category to remove.
+        :type category: Category.
+        """
+        self.categories.remove(category)
+
+    def get_categories(self) -> list[Category]:
+        """
+        :return: List of categories owned by the manager.
+        :rtype: list[Category]
+        """
+        return self.categories
 
 
 
