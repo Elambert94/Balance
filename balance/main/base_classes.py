@@ -393,7 +393,3 @@ class CategoryManager():
         """
         return self.categories
 
-
-
-
-

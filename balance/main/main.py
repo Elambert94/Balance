@@ -1,6 +1,7 @@
 import sys
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QColor
+
 
 class MainWidget(QtWidgets.QWidget):
     """Main application widget.
@@ -11,36 +12,67 @@ class MainWidget(QtWidgets.QWidget):
     def __init__(self):
         """Constructor for MyWidget."""
         super().__init__()
-        self.setWindowTitle("Balance")
-        title = self.create_title_banner()
         
+        self.setWindowTitle("Balance") 
+        self.main_container = self.create_main_container()
+        self.create_user_interface()
 
-    def create_title_banner(self):
-        """Create the title banner for the application.
-
-        :return: The layout containing the title banner widgets.
-        :rtype: QVBoxLayout
+    def create_user_interface(self):
+        """Creates the user interface elements for the application.
+        
         """
+        self.create_toolbar()
+    
+    def create_main_container(self):
+        """Creates the main container for app content.
 
-        # Create Title Text
-        self.box_layout = QtWidgets.QVBoxLayout(self, alignment=QtCore.Qt.AlignTop)
-        self.text = QtWidgets.QLabel("Balance",
-                                     alignment=QtCore.Qt.AlignCenter)
-        self.text.setStyleSheet("font-size: 48px; font-weight: bold; color: #333;")
-        self.box_layout.addWidget(self.text)
+        """
+        container = QtWidgets.QVBoxLayout(self)
+        return container
+    
+    def create_toolbar(self):
+        """Creates the applications toolbar.
 
-        # Add Logo
-        self.logo_label = QtWidgets.QLabel("LogoLabel", alignment=QtCore.Qt.AlignCenter)
-        self.logo = QPixmap("resources/icons/scale.png")
-        if self.logo.isNull():
-            self.logo_label.setText("Logo not found")
-        else:
-            self.logo_label.setPixmap(self.logo)
-            self.box_layout.addWidget(self.logo_label)
-        return self.box_layout
+        """
+        # Attributes
+        toolbar_items = ["Home", "Settings"]
+        toolbar_container = QtWidgets.QWidget()
+        toolbar_layout = QtWidgets.QHBoxLayout(toolbar_container)
+
+        self.create_toolbar_items(toolbar_items, toolbar_layout)
+        self.main_container.addChildWidget(toolbar_container)
+    
+    def create_toolbar_items(self, items : list[str], parent : QtWidgets.QLayout):
+        for item in items:
+            created_item = self.create_toolbar_item(item)
+            parent.addWidget(created_item, alignment=QtCore.Qt.AlignCenter)
+    
+    def create_toolbar_item(self, display_item : str) -> QtWidgets.QLabel:
+        """Create a new toolbar item.
+
+        :param display_item: Text value for the item. 
+        :type display_item: str
+        :return: The created item.
+        :rtype: QtWidgets.QLabel
+        """
+        item = QtWidgets.QLabel(display_item)
+        item.setPalette(QColor('Red'))
+        item.setAutoFillBackground(True)
+        return item
+    
+    def apply_minimum_dimensions(self, width : int = 1280, height : int = 720):
+        """
+        :param width: Minimum width to set, defaults to 1280
+        :type width: int, optional
+        :param height: Minimum height to set, defaults to 720
+        :type height: int, optional
+        """
+        self.setMinimumWidth(width)
+        self.setMinimumHeight(height)
     
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     widget = MainWidget()
+    widget.apply_minimum_dimensions()
     widget.showFullScreen()
     sys.exit(app.exec())
