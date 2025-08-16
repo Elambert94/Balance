@@ -303,6 +303,7 @@ class PersonManager():
        """
        person = Person(person_name)
        self.people.append(person)
+       return person
 
     def remove_person(self, Person):
         """Remove a person from the manager.

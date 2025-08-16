@@ -1,6 +1,7 @@
 import sys
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QColor
+from base_classes import Person, PersonManager
 
 class Toolbar(QtWidgets.QWidget):
     def __init__(self):
@@ -25,85 +26,111 @@ class ToolbarButton(QtWidgets.QPushButton):
         self.text = text
         self.setText(text)
 
-class Homepage(QtWidgets.QWidget):
+class WidgetHomepage(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
         self.main_layout = QtWidgets.QVBoxLayout(self)
         self.main_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
 
-        self.people_manager = PeopleManager()
+        self.people_manager = WidgetPeopleManager()
         self.main_layout.addWidget(self.people_manager)  
 
-class PeopleManager(QtWidgets.QWidget):
+class WidgetPersonDetailsPanel(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         
-        master_container = QtWidgets.QHBoxLayout(self)
-        master_container.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        name_layout = QtWidgets.QHBoxLayout(self)
         
-        user_panel = QtWidgets.QVBoxLayout(self)
-        user_panel.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-        master_container.addLayout(user_panel)
+        label_name = QtWidgets.QLabel("Name: ")
+        self.label_name_val = QtWidgets.QLabel("")
 
-        self.details_layout = QtWidgets.QVBoxLayout(self)
-        self.details_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-        self.details_label_name = QtWidgets.QLabel("")
-        self.details_layout.addWidget(self.details_label_name)
+        name_layout.addWidget(label_name)
+        name_layout.addWidget(self.label_name_val)
 
-        master_container.addLayout(self.details_layout)
+        self.main_layout.addLayout(name_layout)
+
+    def open_person_details(self, person : Person):
+        self.label_name_val.setText(person.get_name())
+        pass
+
+class WidgetPersonPanel(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
         
+        self.setFixedWidth(400)
+        self.main_panel = QtWidgets.QVBoxLayout(self)
+        self.main_panel.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
         new_person_dialog = QtWidgets.QHBoxLayout(self)
-        user_panel.addLayout(new_person_dialog)
+        self.main_panel.addLayout(new_person_dialog)
 
         self.person_list = QtWidgets.QVBoxLayout(self)
-        user_panel.addLayout(self.person_list)
+        self.main_panel.addLayout(self.person_list)
 
-        input_dialog = QtWidgets.QLineEdit(placeholderText="Add New Person")
-        input_dialog.setFixedHeight(50)
-        input_dialog.setFixedWidth(150)
-        new_person_dialog.addWidget(input_dialog)
+        self.input_dialog = QtWidgets.QLineEdit(placeholderText="Add New Person")
+        self.input_dialog.setFixedHeight(30)
+        new_person_dialog.addWidget(self.input_dialog)
 
-        btn_add_person = QtWidgets.QPushButton("+")
-        btn_add_person.setFixedHeight(50)
-        btn_add_person.setFixedWidth(50)
-        btn_add_person.clicked.connect(lambda: self.add_person(input_dialog.text()))
-        new_person_dialog.addWidget(btn_add_person)
+        self.btn_add_person = QtWidgets.QPushButton("+")
+        self.btn_add_person.setFixedHeight(30)
+        self.btn_add_person.setFixedWidth(60)
         
-    def open_person_details(self, person : 'PersonWidget'):
-        self.details_label_name.setText(person.name)
-        pass
+        new_person_dialog.addWidget(self.btn_add_person)
+
+class WidgetPeopleManager(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        
+        self.person_manager = PersonManager()
+
+        master_container = QtWidgets.QHBoxLayout(self)
+        
+        self.user_panel = WidgetPersonPanel()
+        self.user_panel.btn_add_person.clicked.connect(lambda : self.add_person(self.user_panel.input_dialog.text()))
+        master_container.addWidget(self.user_panel)
+
+        self.details = WidgetPersonDetailsPanel()
+        master_container.addWidget(self.details)
+
+        master_container.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+        master_container.addStretch(1)
     
-    def load_person(self, person : 'PersonWidget'):
-        self.open_person_details(person)
+    def load_person(self, person : 'WidgetPerson'):
+        
+        self.details.open_person_details(person)
         print(person.name)
     
     def add_person(self, name : str):
-        person = PersonWidget(name)
-        self.person_list.addWidget(person)
-        person.btn_user.clicked.connect(lambda: self.load_person(person))
-        person.btn_remove_person.clicked.connect(lambda: self.remove_person(person))
-        return person
-    
-    def remove_person(self, widget : 'QtWidgets.QWidget'):
-        self.widget = widget
-        self.person_list.removeWidget(self.widget)
-        widget.deleteLater()
-    
-class PersonDetails(QtWidgets.QWidget):
-    def __init__(self, person : 'PersonWidget'):
-        pass
+        
+        new_person = self.person_manager.add_person_by_name(name)
+        new_person_widget = WidgetPerson(new_person)
+        
+        self.user_panel.person_list.addWidget(new_person_widget)
 
-class PersonWidget(QtWidgets.QWidget):
-    def __init__(self, name : str): # will change this person arg to the person class later.
+        new_person_widget.btn_user.clicked.connect(lambda: self.load_person(new_person))
+        new_person_widget.btn_remove_person.clicked.connect(lambda: self.remove_person(new_person_widget))
+
+        return new_person_widget
+    
+    def remove_person(self, widget : 'WidgetPerson'):
+        
+        self.widget = widget
+        self.person_manager.remove_person(widget.person)
+        self.user_panel.person_list.removeWidget(self.widget)
+        widget.deleteLater()
+        
+
+class WidgetPerson(QtWidgets.QWidget):
+    def __init__(self, person : Person): 
         super().__init__()
         
-        self.name = name
+        self.person = person
         
         layout = QtWidgets.QHBoxLayout(self)
         layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         
-        self.btn_user = QtWidgets.QPushButton(name)
+        self.btn_user = QtWidgets.QPushButton(self.person.get_name())
         self.btn_user.setMinimumWidth(100)
 
         self.btn_remove_person = QtWidgets.QPushButton("-")
@@ -111,7 +138,7 @@ class PersonWidget(QtWidgets.QWidget):
         layout.addWidget(self.btn_user)
         layout.addWidget(self.btn_remove_person)
             
-class Settings(QtWidgets.QWidget):
+class WidgetSettings(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         layout = QtWidgets.QVBoxLayout(self)
@@ -152,12 +179,12 @@ class MainAppWidget(QtWidgets.QWidget):
         content_stack = QtWidgets.QStackedWidget(self)
         master_container.addWidget(content_stack)
         
-        homepage = Homepage()
+        homepage = WidgetHomepage()
         toolbar_btn_homepage = toolbar.create_toolbar_button("Home")
         toolbar_btn_homepage.clicked.connect(lambda: content_stack.setCurrentIndex(0))
         content_stack.addWidget(homepage)
         
-        settings = Settings()
+        settings = WidgetSettings()
         toolbar_btn_settings = toolbar.create_toolbar_button("Settings")
         toolbar_btn_settings.clicked.connect(lambda: content_stack.setCurrentIndex(1))
         content_stack.addWidget(settings)
