@@ -248,13 +248,17 @@ class Person():
         """
         self.name = new_name
     
-    def create_account(self, account_name : str):
+    def create_account(self, account_name : str) -> Account:
         """Create a new account for the person.
 
         :param account_name: The name for the account.
         :type account_name: str
+        :return: The created account.
+        :rtype: Account
         """
-        self.accounts.append(Account(account_name, self))
+        new_account = Account(account_name, self)
+        self.accounts.append(new_account)
+        return new_account
 
 class PersonManager():
     def __init__(self, people : list[Person] = []):

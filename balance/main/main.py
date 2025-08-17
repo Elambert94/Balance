@@ -1,7 +1,7 @@
 import sys
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QColor
-from base_classes import Person, PersonManager
+from base_classes import Person, PersonManager, Account
 
 class Toolbar(QtWidgets.QWidget):
     def __init__(self):
@@ -36,26 +36,63 @@ class WidgetHomepage(QtWidgets.QWidget):
         self.people_manager = WidgetPeopleManager()
         self.main_layout.addWidget(self.people_manager)  
 
-class WidgetPersonDetailsPanel(QtWidgets.QWidget):
-    def __init__(self):
+class WidgetItemPersonDetailsPanel(QtWidgets.QWidget):
+    def __init__(self, person = Person):
         super().__init__()
         
+        self.person = person
         self.main_layout = QtWidgets.QVBoxLayout(self)
         name_layout = QtWidgets.QHBoxLayout(self)
-        
-        label_name = QtWidgets.QLabel("Name: ")
+        label_name = QtWidgets.QLabel(self.person.get_name())
         self.label_name_val = QtWidgets.QLabel("")
-
         name_layout.addWidget(label_name)
         name_layout.addWidget(self.label_name_val)
 
+        layout_account_details = QtWidgets.QVBoxLayout(self)
+        layout_add_new_account = QtWidgets.QHBoxLayout(self)
+        self.input_new_account = QtWidgets.QLineEdit(placeholderText="Enter Account Name")
+        self.input_new_account.setFixedWidth(300)
+        self.btn_new_account = QtWidgets.QPushButton("+")
+        self.btn_new_account.setFixedSize(30, 30)
+        self.btn_new_account.clicked.connect(lambda: self.create_account(self.input_new_account.text()))
+        
+        layout_add_new_account.addWidget(self.input_new_account)
+        layout_add_new_account.addWidget(self.btn_new_account)
+        layout_account_details.addLayout(layout_add_new_account)
+
+        label_accounts = QtWidgets.QLabel("Accounts")
+        self.layout_account_list = QtWidgets.QVBoxLayout(self)
+        self.layout_account_list.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+        
+        layout_account_details.addWidget(label_accounts)
+        layout_account_details.addLayout(self.layout_account_list)
+
+        self.load_person()
+        
         self.main_layout.addLayout(name_layout)
+        self.main_layout.addLayout(layout_account_details)
+    
+    def create_account(self, account_name : str):
+        new_account = self.person.create_account(account_name)
+        new_widget = WidgetItemAccount(new_account)
+        new_widget.btn_remove.clicked.connect(lambda: self.remove_account(self.remove_account(new_widget)))
+        self.layout_account_list.addWidget(new_widget)
 
-    def open_person_details(self, person : Person):
-        self.label_name_val.setText(person.get_name())
-        pass
+    def add_account_widget(self, account : Account):
+        new_widget = WidgetItemAccount(account)
+        new_widget.btn_remove.clicked.connect(lambda: self.remove_account(self.remove_account(new_widget)))
+        self.layout_account_list.addWidget(new_widget)
 
-class WidgetPersonPanel(QtWidgets.QWidget):
+    def load_person(self):
+        for account in self.person.get_accounts():
+            self.add_account_widget(account)
+
+    def remove_account(self, widget_account : 'WidgetItemAccount'):
+        # Delete account 
+        self.layout_account_list.removeWidget(widget_account)
+        widget_account.deleteLater()
+   
+class WidgetItemPersonPanel(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         
@@ -84,60 +121,74 @@ class WidgetPeopleManager(QtWidgets.QWidget):
         
         self.person_manager = PersonManager()
 
-        master_container = QtWidgets.QHBoxLayout(self)
+        self.master_container = QtWidgets.QHBoxLayout(self)
         
-        self.user_panel = WidgetPersonPanel()
+        self.user_panel = WidgetItemPersonPanel()
         self.user_panel.btn_add_person.clicked.connect(lambda : self.add_person(self.user_panel.input_dialog.text()))
-        master_container.addWidget(self.user_panel)
+        self.master_container.addWidget(self.user_panel)
 
-        self.details = WidgetPersonDetailsPanel()
-        master_container.addWidget(self.details)
+        self.details : WidgetItemPersonDetailsPanel = None
 
-        master_container.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-        master_container.addStretch(1)
+        self.master_container.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+        self.master_container.addStretch(1)
     
-    def load_person(self, person : 'WidgetPerson'):
+    def load_person(self, person : 'Person'):
         
-        self.details.open_person_details(person)
-        print(person.name)
-    
+        if self.details:
+            self.master_container.removeWidget(self.details)
+            self.details.deleteLater()
+        
+        self.details = WidgetItemPersonDetailsPanel(person)
+        self.master_container.insertWidget(1, self.details)
+        
     def add_person(self, name : str):
         
         new_person = self.person_manager.add_person_by_name(name)
-        new_person_widget = WidgetPerson(new_person)
+        new_person_widget = WidgetItemPerson(new_person)
         
         self.user_panel.person_list.addWidget(new_person_widget)
 
-        new_person_widget.btn_user.clicked.connect(lambda: self.load_person(new_person))
-        new_person_widget.btn_remove_person.clicked.connect(lambda: self.remove_person(new_person_widget))
+        new_person_widget.btn.clicked.connect(lambda: self.load_person(new_person))
+        new_person_widget.btn_remove.clicked.connect(lambda: self.remove_person(new_person_widget))
 
         return new_person_widget
     
-    def remove_person(self, widget : 'WidgetPerson'):
+    def remove_person(self, widget : 'WidgetItemPerson'):
         
         self.widget = widget
         self.person_manager.remove_person(widget.person)
         self.user_panel.person_list.removeWidget(self.widget)
         widget.deleteLater()
-        
 
-class WidgetPerson(QtWidgets.QWidget):
-    def __init__(self, person : Person): 
+class WidgetItem(QtWidgets.QWidget):
+    def __init__(self): 
         super().__init__()
-        
-        self.person = person
         
         layout = QtWidgets.QHBoxLayout(self)
         layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         
-        self.btn_user = QtWidgets.QPushButton(self.person.get_name())
-        self.btn_user.setMinimumWidth(100)
+        self.btn = QtWidgets.QPushButton("")
+        self.btn.setMinimumWidth(100)
 
-        self.btn_remove_person = QtWidgets.QPushButton("-")
+        self.btn_remove = QtWidgets.QPushButton("-")
 
-        layout.addWidget(self.btn_user)
-        layout.addWidget(self.btn_remove_person)
-            
+        layout.addWidget(self.btn)
+        layout.addWidget(self.btn_remove)
+
+class WidgetItemPerson(WidgetItem):
+    def __init__(self, person : Person):
+        super().__init__()
+
+        self.person = person
+        self.btn.setText(self.person.get_name())
+
+class WidgetItemAccount(WidgetItem):
+    def __init__(self, account : Account):
+        super().__init__()
+
+        self.account = account
+        self.btn.setText(self.account.get_account_name())
+
 class WidgetSettings(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -199,10 +250,6 @@ class MainAppWidget(QtWidgets.QWidget):
         """
         self.setMinimumWidth(width)
         self.setMinimumHeight(height)
-
-
-    
-
     
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
